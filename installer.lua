@@ -28,22 +28,32 @@ local files = {
   "metis/input/keybinding.lua",
   "metis/string/fuzzy.lua",
 }
-local tasks = {}
+
+print("Starting secure download sequence...")
+
 for i, path in ipairs(files) do
-  tasks[i] = function()
-    local req, err = http.get("https://raw.githubusercontent.com/SquidDev-CC/artist/HEAD/src/" .. path)
-    if not req then error("Failed to download " .. path .. ": " .. err, 0) end
-
-    local file = fs.open(".artist.d/src/" .. path, "w")
-    file.write(req.readAll())
-    file.close()
-
+  print("Fetching: " .. path)
+  local url = "https://raw.githubusercontent.com/SquidDev-CC/artist/master/src/" .. path
+  local req, err = http.get(url)
+  
+  if not req then 
+    print(" -> ERROR: " .. tostring(err))
+  else
+    local save_path = ".artist.d/src/" .. path
+    local file = fs.open(save_path, "w")
+    if file then
+      file.write(req.readAll())
+      file.close()
+    else
+      print(" -> ERROR: Could not write to disk.")
+    end
     req.close()
   end
 end
 
-parallel.waitForAll(table.unpack(tasks))
+print("Generating boot file...")
+local boot_file = fs.open("artist.lua", "w")
+boot_file.write('shell.run(".artist.d/src/launch.lua")')
+boot_file.close()
 
-io.open("artist.lua", "w"):write('shell.run(".artist.d/src/launch.lua")'):close()
-
-print("Artist successfully installed! Run /artist.lua to start.")
+print("Installation Complete! Run 'artist.lua' to start.")
