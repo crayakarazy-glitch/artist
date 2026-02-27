@@ -33,7 +33,8 @@ print("Starting secure download sequence...")
 
 for i, path in ipairs(files) do
   print("Fetching: " .. path)
-  local url = "https://raw.githubusercontent.com/SquidDev-CC/artist/master/src/" .. path
+  -- The fix: Pointing to 'main' instead of the non-existent 'master'
+  local url = "https://raw.githubusercontent.com/SquidDev-CC/artist/main/src/" .. path
   local req, err = http.get(url)
   
   if not req then 
